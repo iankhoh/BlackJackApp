@@ -19,12 +19,13 @@ class cards:
     def __init__(self):
         self.deck = []
         self.suits = ['Diamond', 'Clubs', 'Hearts', 'Spades']
+        self.suits_symbols = ['♦', '♣', '♥', '♠']
         self.numbers = ['A','2','3','4','5','6','7','8','9','10','J','Q','K']
 
     def generateDeck(self):
         self.deck = []
         for i in self.numbers:
-            for j in self.suits:
+            for j in self.suits_symbols:
                 insertCard = []
                 insertCard.append(i)
                 insertCard.append(j)

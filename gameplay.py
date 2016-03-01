@@ -16,7 +16,7 @@ class gameplay:
         self.playerDict[playerObj.name] = playerObj
         self.totalPlayers.append(playerObj)
 
-        print ("Player " + playerObj.name + " is added to the game.")
+        print ("Player '%s' is added to the game." % playerObj.name)
 
     def removePlayer(self, obj):
         if obj in self.totalPlayers:
@@ -44,13 +44,18 @@ class gameplay:
 
         if len(compareValue)!=0:
                 sorted_x = sorted(compareValue.items(), key=operator.itemgetter(1), reverse=True)
-                print (sorted_x)
                 self.winner = ((sorted_x)[0])[0]
                 self.playerDict[self.winner].winner = True
         else:
             self.winner = ""
 
-        print (self.winner)
+        print("\nResults:")
+        for k in self.totalPlayers:
+            temp = str(k.totalOnHand)
+            print("%s's cards adds up to be %s" % (k.name, temp))
+
+        print ("\nWinner: " + self.winner)
+        print ("________________________\n")
 
 
         # play = input("Play Ultimate BlackJack? \nInput anything to continue OR Input 'no' to quit game: ")

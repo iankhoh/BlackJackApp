@@ -1,4 +1,5 @@
 import tkinter as tk   # python
+from tkinter import *
 from gameplay import *
 from player import *
 
@@ -9,10 +10,10 @@ class BlackJackApp(tk.Tk):
     def __init__(self, *args, **kwargs):
 
         tk.Tk.__init__(self, *args, **kwargs)
-        tk.Tk.minsize(self, 350, 350)
+        tk.Tk.minsize(self, 400, 400)
 
         self.title("BlackJack App | created by Ian Khoh")
-        self.geometry("500x500")
+        self.geometry("500x550")
 
         # the container is where we'll stack a bunch of frames
         # on top of each other, then the one we want visible
@@ -35,6 +36,12 @@ class BlackJackApp(tk.Tk):
 
         self.show_frame("WelcomePage")
 
+    def gridContainerInit(self, *args, **kwargs):
+        self.container.pack_forget()
+        self.container.grid_rowconfigure(10, weight=1)
+        self.container.grid_columnconfigure(10, weight=1)
+        self.container.grid()
+
     # Show a frame for the given page name
     def show_frame(self, page_name):
         frame = self.frames[page_name]
@@ -47,9 +54,13 @@ class BlackJackApp(tk.Tk):
         controller.once = "1"
         self.refrehGamePage(controller)
 
+    def settingsGame(self, controller):
+        self.show_frame("SetUpPage")
+
     def okButton(self, controller, name, var):
         self.name = str(name.get())
         self.option = str(var.get())
+        self.gridContainerInit(controller)
         self.once = "1"
 
         self.refrehGamePage(controller)
@@ -201,21 +212,11 @@ class GamePage(tk.Frame):
         else:
             dealerLabel = tk.Label(self, text=dealerName, font=TITLE_FONT)
 
-        dealerCards = tk.Label(self, text=dealerOnHand)
+        dealerLabel.grid(row=2, column=0)
 
-        # ===== User Display ===== #
-        if user.cardBurst == True:
-            userLabel = tk.Label(self, text=userName, font=TITLE_FONT, fg="red")
-        elif user.winner == True:
-            userLabel = tk.Label(self, text=userName, font=TITLE_FONT, fg="green")
-        else:
-            userLabel = tk.Label(self, text=userName, font=TITLE_FONT)
-
-        userCards = tk.Label(self, text=userOnHand)
-
-
-        dealerLabel.pack(side="top", fill="x")
-        dealerCards.pack(fill="x")
+        for i in range (0, len(dealerOnHand)):
+            dealerCards = tk.Label(self, text=dealerOnHand[i], bg="black", fg="white")
+            dealerCards.grid(row=3, column=1+i, padx=(0,5), ipadx=5, ipady=15)
 
 
         # If user choose 2 players - add 1 more players (including himself)
@@ -227,10 +228,11 @@ class GamePage(tk.Frame):
             else:
                 p2 = tk.Label(self, text=p2name, font=TITLE_FONT)
 
-            p2Cards = tk.Label(self, text=p2OnHand)
+            p2.grid(row=4, column=0)
 
-            p2.pack(fill="x")
-            p2Cards.pack(fill="x")
+            for i in range (0, len(p2OnHand)):
+                p2Cards = tk.Label(self, text=p2OnHand[i], bg="black", fg="white")
+                p2Cards.grid(row=5, column=1+i, padx=(0,5), ipadx=5, ipady=15)
 
 
         # If user choose 3 players - add 2 more players (including himself)
@@ -243,10 +245,13 @@ class GamePage(tk.Frame):
             else:
                 p2 = tk.Label(self, text=p2name, font=TITLE_FONT)
 
-            p2Cards = tk.Label(self, text=p2OnHand)
+            p2.grid(row=4, column=0)
 
-            p2.pack(fill="x")
-            p2Cards.pack(fill="x")
+            for i in range (0, len(p2OnHand)):
+                p2Cards = tk.Label(self, text=p2OnHand[i], bg="black", fg="white")
+                p2Cards.grid(row=5, column=1+i, padx=(0,5), ipadx=5, ipady=15)
+
+
 
             # ===== Player 3 Display ===== #
             if p3.cardBurst == True:
@@ -256,31 +261,48 @@ class GamePage(tk.Frame):
             else:
                 p3 = tk.Label(self, text=p3name, font=TITLE_FONT)
 
-            p3Cards = tk.Label(self, text=p3OnHand)
+            p3.grid(row=6, column=0)
 
-            p3.pack(fill="x")
-            p3Cards.pack(fill="x")
+            for i in range (0, len(p3OnHand)):
+                p3Cards = tk.Label(self, text=p3OnHand[i], bg="black", fg="white")
+                p3Cards.grid(row=7, column=1+i, padx=(0,5), ipadx=5, ipady=15)
 
+        # ===== Line ===== #
+
+        line = tk.Label(self, text="_______________________________", font=TITLE_FONT)
+        line.grid(row=19, column=0, pady=(5), columnspan=10)
+
+        # ===== User Display ===== #
+        if user.cardBurst == True:
+            userLabel = tk.Label(self, text=userName, font=TITLE_FONT, fg="red")
+        elif user.winner == True:
+            userLabel = tk.Label(self, text=userName, font=TITLE_FONT, fg="green")
+        else:
+            userLabel = tk.Label(self, text=userName, font=TITLE_FONT)
+
+        userLabel.grid(row=20, column=0)
+
+        for i in range (0, len(userOnHand)):
+            userCards = tk.Label(self, text=userOnHand[i], bg="black", fg="white")
+            userCards.grid(row=21, column=1+i, padx=(0,5), ipadx=5, ipady=15)
 
         # ===== Buttons Display ===== #
-
         hitMe = tk.Button(self, text="Hit Me",
                           command=lambda: controller.hitMeButton(controller))
-        done = tk.Button(self, text="Done",
+        done = tk.Button(self, text="Stay",
                           command=lambda: controller.doneButton(controller))
         replayButton = tk.Button(self, text="Replay?",
                             command=lambda: controller.replayGame(controller))
+        settingsButton = tk.Button(self, text="Settings",
+                            command=lambda: controller.settingsGame(controller))
         closeButton = tk.Button(self, text="Quit",
                             command=lambda: controller.closeApp())
 
-
-        userLabel.pack(fill="x", pady=(50, 0))
-        userCards.pack(fill="x")
-
-        hitMe.pack(pady=(20, 0))
-        done.pack()
-        replayButton.pack()
-        closeButton.pack()
+        hitMe.grid(row=22, column=1, pady=(25, 0))
+        done.grid(row=22, column=2, pady=(25, 0))
+        replayButton.grid(row=23, column=1, pady=(3,0))
+        settingsButton.grid(row=23, column=2, pady=(3,0))
+        closeButton.grid(row=24, column=1, columnspan=2, pady=(5,0))
 
 
 if __name__ == "__main__":
