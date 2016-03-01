@@ -74,6 +74,7 @@ class BlackJackApp(tk.Tk):
     def doneButton(self, controller):
         controller.game.checkMatch(controller.deck)
 
+        self.showCard = True
         self.refrehGamePage(controller)
 
     def refrehGamePage(self, controller):
@@ -145,24 +146,26 @@ class GamePage(tk.Frame):
         # If it is (="1"), add players + generate card decks + draw cards,
         # or else continue with the game with existing players and cards
         if controller.once == "1":
-            self.addPlayer(controller)
-        self.gameInit(controller)
+            self.gameInit(controller)
+        self.guiInit(controller)
 
 ### ====== Add Players for the first init ====== ###
-    def addPlayer(self, controller):
+    def gameInit(self, controller):
         controller.once = "0"
+        controller.showCard = False
         userName = controller.name
         option = controller.option
 
         # Add players to the game - depending on "Select Players" input
         game = gameplay()
         game.addPlayer("Dealer", "D")
-        game.addPlayer(userName, "NULL", True)
         if option == "2":
             game.addPlayer("Player2")
         elif option == "3":
             game.addPlayer("Player2")
             game.addPlayer("Player3")
+
+        game.addPlayer(userName, "NULL", True)
 
         # Get a deck of cards, shuffle them!
         host = cards()
@@ -176,7 +179,7 @@ class GamePage(tk.Frame):
 
 ### ====== GUI display settings ====== ###
 
-    def gameInit(self, controller):
+    def guiInit(self, controller):
         userName = controller.name
         option = controller.option
 
@@ -205,7 +208,7 @@ class GamePage(tk.Frame):
 
         # Default display - Dealer and User display
         # ===== Dealer Display ===== #
-        if dealer.cardBurst == True:
+        if dealer.winner == False:
             dealerLabel = tk.Label(self, text=dealerName, font=TITLE_FONT, fg="red")
         elif dealer.winner == True:
             dealerLabel = tk.Label(self, text=dealerName, font=TITLE_FONT, fg="green")
@@ -215,13 +218,16 @@ class GamePage(tk.Frame):
         dealerLabel.grid(row=2, column=0)
 
         for i in range (0, len(dealerOnHand)):
-            dealerCards = tk.Label(self, text=dealerOnHand[i], bg="black", fg="white")
+            if controller.showCard == True:
+                dealerCards = tk.Label(self, text=dealerOnHand[i], bg="black", fg="white")
+            else:
+                dealerCards = tk.Label(self, text=dealerOnHand[i], bg="black", fg="black")
             dealerCards.grid(row=3, column=1+i, padx=(0,5), ipadx=5, ipady=15)
 
 
         # If user choose 2 players - add 1 more players (including himself)
         if option == "2":
-            if p2.cardBurst == True:
+            if p2.winner == False:
                 p2 = tk.Label(self, text=p2name, font=TITLE_FONT, fg="red")
             elif p2.winner == True:
                 p2 = tk.Label(self, text=p2name, font=TITLE_FONT, fg="green")
@@ -231,14 +237,17 @@ class GamePage(tk.Frame):
             p2.grid(row=4, column=0)
 
             for i in range (0, len(p2OnHand)):
-                p2Cards = tk.Label(self, text=p2OnHand[i], bg="black", fg="white")
+                if controller.showCard == True:
+                    p2Cards = tk.Label(self, text=p2OnHand[i], bg="black", fg="white")
+                else:
+                    p2Cards = tk.Label(self, text=p2OnHand[i], bg="black", fg="black")
                 p2Cards.grid(row=5, column=1+i, padx=(0,5), ipadx=5, ipady=15)
 
 
         # If user choose 3 players - add 2 more players (including himself)
         elif option == "3":
             # ===== Player 2 Display ===== #
-            if p2.cardBurst == True:
+            if p2.winner == False:
                 p2 = tk.Label(self, text=p2name, font=TITLE_FONT, fg="red")
             elif p2.winner == True:
                 p2 = tk.Label(self, text=p2name, font=TITLE_FONT, fg="green")
@@ -248,13 +257,16 @@ class GamePage(tk.Frame):
             p2.grid(row=4, column=0)
 
             for i in range (0, len(p2OnHand)):
-                p2Cards = tk.Label(self, text=p2OnHand[i], bg="black", fg="white")
+                if controller.showCard == True:
+                    p2Cards = tk.Label(self, text=p2OnHand[i], bg="black", fg="white")
+                else:
+                    p2Cards = tk.Label(self, text=p2OnHand[i], bg="black", fg="black")
                 p2Cards.grid(row=5, column=1+i, padx=(0,5), ipadx=5, ipady=15)
 
 
 
             # ===== Player 3 Display ===== #
-            if p3.cardBurst == True:
+            if p3.winner == False:
                 p3 = tk.Label(self, text=p3name, font=TITLE_FONT, fg="red")
             elif p3.winner == True:
                 p3 = tk.Label(self, text=p3name, font=TITLE_FONT, fg="green")
@@ -264,7 +276,10 @@ class GamePage(tk.Frame):
             p3.grid(row=6, column=0)
 
             for i in range (0, len(p3OnHand)):
-                p3Cards = tk.Label(self, text=p3OnHand[i], bg="black", fg="white")
+                if controller.showCard == True:
+                    p3Cards = tk.Label(self, text=p3OnHand[i], bg="black", fg="white")
+                else:
+                    p3Cards = tk.Label(self, text=p3OnHand[i], bg="black", fg="black")
                 p3Cards.grid(row=7, column=1+i, padx=(0,5), ipadx=5, ipady=15)
 
         # ===== Line ===== #
@@ -273,7 +288,7 @@ class GamePage(tk.Frame):
         line.grid(row=19, column=0, pady=(5), columnspan=10)
 
         # ===== User Display ===== #
-        if user.cardBurst == True:
+        if user.winner == False:
             userLabel = tk.Label(self, text=userName, font=TITLE_FONT, fg="red")
         elif user.winner == True:
             userLabel = tk.Label(self, text=userName, font=TITLE_FONT, fg="green")

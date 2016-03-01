@@ -1,4 +1,3 @@
-import math
 from cards import *
 
 class player:
@@ -10,10 +9,23 @@ class player:
         self.totalOnHand = 0
         self.userRight = userRight
         self.cardBurst = False
-        self.winner = False
+        self.winner = "NULL"
 
     def drawCard(self, deck):
         drawnCard = deck.pop(0)
         self.onHand.append(drawnCard)
         cardNum = int(cards.numbersRep['%s' % drawnCard[0]])
         self.totalOnHand += cardNum
+
+        if self.totalOnHand > 21:
+            self.totalOnHandAce11 = self.totalOnHand
+            for m in self.onHand:
+                if m[0] == "A":
+                    cards.numbersRep['A'] = 1
+            self.getTotalOnHand()
+
+    def getTotalOnHand(self):
+        totalOnHand = 0
+        for i in self.onHand:
+            totalOnHand += int(cards.numbersRep["%s" % i[0]])
+            self.totalOnHand = totalOnHand
