@@ -10,6 +10,8 @@ class player:
         self.userRight = userRight
         self.cardBurst = False
         self.winner = "NULL"
+        self.money = 0
+        self.bet = 0
 
     def drawCard(self, deck):
         drawnCard = deck.pop(0)

@@ -21,6 +21,9 @@ class gameplay:
     def startGame(self, deck):
         print("\n**** Game Start! ****\n")
         cards.numbersRep['A'] = 11
+        for j in self.totalPlayers:
+            del j.onHand[:]
+
         for i in range (2):
             for j in self.totalPlayers:
                 j.drawCard(deck)
@@ -45,9 +48,9 @@ class gameplay:
         print ("Dealer: %s" % dealerOnHand)
 
 
-        # If dealer has more than 21, players gets
-        # tied by having > 21
-        # or win by having < 21
+        # If dealer has more than 21,
+        # results = Tie, if player > 21
+        # results = Win, if player < 21
         if dealerOnHand > 21:
             dealer.cardBurst = True
             for i in self.totalPlayers:
@@ -60,8 +63,9 @@ class gameplay:
                     else:
                         i.winner = True
                         print ("%s: %s - WON!" % (i.name, i.totalOnHand))
+                        i.money += i.bet
 
-        # If dealer does not exceed 21, validate players
+        # If dealer does not exceed 21, validate if players
         # Win, Lose, or Tie
         else:
             for i in self.totalPlayers:
@@ -69,15 +73,18 @@ class gameplay:
                     if i.totalOnHand > 21:
                         i.winner = False
                         print ("%s: %s - LOST! (card burst)" % (i.name, i.totalOnHand))
+                        i.money -= i.bet
                     elif i.totalOnHand > dealerOnHand:
                         i.winner = True
                         print ("%s: %s - WON!" % (i.name, i.totalOnHand))
+                        i.money += i.bet
                     elif i.totalOnHand == dealerOnHand:
                         i.winner = "Tie"
                         print ("%s: %s - TIED!" % (i.name, i.totalOnHand))
                     else:
                         i.winner = False
                         print ("%s: %s - LOST!" % (i.name, i.totalOnHand))
+                        i.money -= i.bet
 
 
         print ("________________________\n")

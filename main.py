@@ -50,31 +50,65 @@ class BlackJackApp(tk.Tk):
     def closeApp(self):
         self.destroy()
 
+    def okButton(self, controller, name, var, totalCashIn):
+        self.name = str(name.get())
+        self.option = str(var.get())
+        getTotalCashIn = totalCashIn.get()
+        param, splitTotalCashIn = getTotalCashIn.split("$", 1)
+        self.userMoney = int(splitTotalCashIn.strip())
+        self.gridContainerInit(controller)
+        self.once = "1"
+        self.showBetButtons = True
+        self.showGamePlayButtons = False
+
+        userName = self.name
+        option = self.option
+        self.game = gameplay()
+        game = self.game
+
+        # Add players to the game - depending on "Select Players" input
+        game.addPlayer("Dealer", "D")
+        if option == "2":
+            game.addPlayer("Player2")
+        elif option == "3":
+            game.addPlayer("Player2")
+            game.addPlayer("Player3")
+
+        game.addPlayer(userName, "NULL", True)
+        self.user = game.playerDict[userName]
+        self.user.money = controller.userMoney
+
+        self.refrehGamePage(controller)
+
+    def betButton(self, controller, bet):
+        self.user.bet += bet
+        self.refrehGamePage(controller)
+
+    def dealButton(self, controller):
+        self.showGamePlayButtons = True
+        self.showBetButtons = False
+        self.refrehGamePage(controller)
+
     def replayGame(self, controller):
         controller.once = "1"
+        self.showBetButtons = True
+        self.showGamePlayButtons = False
+        self.user.bet = 0
         self.refrehGamePage(controller)
 
     def settingsGame(self, controller):
         self.show_frame("SetUpPage")
 
-    def okButton(self, controller, name, var):
-        self.name = str(name.get())
-        self.option = str(var.get())
-        self.gridContainerInit(controller)
-        self.once = "1"
-
-        self.refrehGamePage(controller)
-
     def hitMeButton(self, controller):
-        user = controller.game.playerDict[controller.name]
-        user.drawCard(controller.deck)
-
+        self.user.drawCard(controller.deck)
         self.refrehGamePage(controller)
 
     def doneButton(self, controller):
         controller.game.checkMatch(controller.deck)
 
         self.showCard = True
+        self.showBetButtons = False
+        self.showGamePlayButtons = True
         self.refrehGamePage(controller)
 
     def refrehGamePage(self, controller):
@@ -85,8 +119,7 @@ class BlackJackApp(tk.Tk):
 
         controller.show_frame("GamePage")
 
-    def passVal2controller(self, controller, game, deck):
-        self.game = game
+    def passVal2controller(self, controller, deck):
         self.deck = deck
 
 class WelcomePage(tk.Frame):
@@ -112,11 +145,14 @@ class SetUpPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
-        label = tk.Label(self, text="What is your name?", font=TITLE_FONT)
+        nameLabel = tk.Label(self, text="What is your name?", font=TITLE_FONT)
         name = tk.Entry(self, bd =5)
+        var1 = IntVar()
+        dealerCheckButton = tk.Checkbutton(self, text="Playing as Dealer?", variable=var1)
 
-        label.pack(side="top", fill="x", pady=10)
+        nameLabel.pack(side="top", fill="x", pady=10)
         name.pack(ipadx=10, pady=5)
+        dealerCheckButton.pack()
 
         #######
 
@@ -127,13 +163,20 @@ class SetUpPage(tk.Frame):
 
         option = tk.OptionMenu(self, var, "1", "2", "3")
 
-        label.pack(fill="x", pady=10)
+        label.pack(fill="x", pady=15)
         option.pack()
 
         ########
 
+        totalCashLabel = tk.Label(self, text="Enter how much you would \nlike to bring into the game:")
+        totalCashIn = tk.Entry(self, bd =5)
+        totalCashIn.insert(END, '$ ' + '1000')
+
+        totalCashLabel.pack()
+        totalCashIn.pack()
+
         button = tk.Button(self, text="OK",
-                           command=lambda: controller.okButton(controller, name, var))
+                           command=lambda: controller.okButton(controller, name, var, totalCashIn))
         button.pack(pady=40)
 
 
@@ -153,29 +196,17 @@ class GamePage(tk.Frame):
     def gameInit(self, controller):
         controller.once = "0"
         controller.showCard = False
-        userName = controller.name
-        option = controller.option
-
-        # Add players to the game - depending on "Select Players" input
-        game = gameplay()
-        game.addPlayer("Dealer", "D")
-        if option == "2":
-            game.addPlayer("Player2")
-        elif option == "3":
-            game.addPlayer("Player2")
-            game.addPlayer("Player3")
-
-        game.addPlayer(userName, "NULL", True)
+        controller.user.bet = 0
 
         # Get a deck of cards, shuffle them!
         host = cards()
         deck = host.generateDeck()
         host.shuffleDeck(deck)
 
-        # game.startGame makes players draw 2 cards to begin with, including dealer
-        game.startGame(deck)
+        # game.startGame makes joined players draw 2 cards to begin with, including dealer
+        controller.game.startGame(deck)
 
-        controller.passVal2controller(controller, game, deck)
+        controller.passVal2controller(controller, deck)
 
 ### ====== GUI display settings ====== ###
 
@@ -189,22 +220,27 @@ class GamePage(tk.Frame):
         dealer = game.playerDict["Dealer"]
         dealerName = dealer.name
         dealerOnHand = dealer.onHand
+        dealerMoney = str(dealer.money)
 
         user = game.playerDict[userName]
         userOnHand = user.onHand
+        userMoney = str(user.money)
 
         if option == "2":
             p2 = game.playerDict["Player2"]
             p2name = p2.name
             p2OnHand = p2.onHand
+            p2Money = str(p2.money)
 
         elif option == "3":
             p2 = game.playerDict["Player2"]
             p2name = p2.name
             p2OnHand = p2.onHand
+            p2Money = str(p2.money)
             p3 = game.playerDict["Player3"]
             p3name = p3.name
             p3OnHand = p3.onHand
+            p3Money = str(p3.money)
 
         # Default display - Dealer and User display
         # ===== Dealer Display ===== #
@@ -223,6 +259,10 @@ class GamePage(tk.Frame):
             else:
                 dealerCards = tk.Label(self, text=dealerOnHand[i], bg="black", fg="black")
             dealerCards.grid(row=3, column=1+i, padx=(0,5), ipadx=5, ipady=15)
+
+        dealerMoneyLabel = tk.Label(self, text="Total: $" + dealerMoney)
+        dealerMoneyLabel.grid(row=3,  column=0)
+
 
 
         # If user choose 2 players - add 1 more players (including himself)
@@ -243,6 +283,8 @@ class GamePage(tk.Frame):
                     p2Cards = tk.Label(self, text=p2OnHand[i], bg="black", fg="black")
                 p2Cards.grid(row=5, column=1+i, padx=(0,5), ipadx=5, ipady=15)
 
+            p2MoneyLabel = tk.Label(self, text="Total: $" + p2Money)
+            p2MoneyLabel.grid(row=5,  column=0)
 
         # If user choose 3 players - add 2 more players (including himself)
         elif option == "3":
@@ -263,6 +305,8 @@ class GamePage(tk.Frame):
                     p2Cards = tk.Label(self, text=p2OnHand[i], bg="black", fg="black")
                 p2Cards.grid(row=5, column=1+i, padx=(0,5), ipadx=5, ipady=15)
 
+            p2MoneyLabel = tk.Label(self, text="Total: $" + p2Money)
+            p2MoneyLabel.grid(row=5,  column=0)
 
 
             # ===== Player 3 Display ===== #
@@ -282,6 +326,9 @@ class GamePage(tk.Frame):
                     p3Cards = tk.Label(self, text=p3OnHand[i], bg="black", fg="black")
                 p3Cards.grid(row=7, column=1+i, padx=(0,5), ipadx=5, ipady=15)
 
+            p3MoneyLabel = tk.Label(self, text="Total: $" + p3Money)
+            p3MoneyLabel.grid(row=7,  column=0)
+
         # ===== Line ===== #
 
         line = tk.Label(self, text="_______________________________", font=TITLE_FONT)
@@ -298,26 +345,54 @@ class GamePage(tk.Frame):
         userLabel.grid(row=20, column=0)
 
         for i in range (0, len(userOnHand)):
-            userCards = tk.Label(self, text=userOnHand[i], bg="black", fg="white")
+            if (controller.showGamePlayButtons == True):
+                userCards = tk.Label(self, text=userOnHand[i], bg="black", fg="white")
+            else:
+                userCards = tk.Label(self, text=userOnHand[i], bg="black", fg="black")
             userCards.grid(row=21, column=1+i, padx=(0,5), ipadx=5, ipady=15)
 
-        # ===== Buttons Display ===== #
-        hitMe = tk.Button(self, text="Hit Me",
-                          command=lambda: controller.hitMeButton(controller))
-        done = tk.Button(self, text="Stay",
-                          command=lambda: controller.doneButton(controller))
-        replayButton = tk.Button(self, text="Replay?",
-                            command=lambda: controller.replayGame(controller))
-        settingsButton = tk.Button(self, text="Settings",
-                            command=lambda: controller.settingsGame(controller))
-        closeButton = tk.Button(self, text="Quit",
-                            command=lambda: controller.closeApp())
+        userMoneyLabel = tk.Label(self, text="Total: $" + userMoney)
+        userMoneyLabel.grid(row=21,  column=0)
 
-        hitMe.grid(row=22, column=1, pady=(25, 0))
-        done.grid(row=22, column=2, pady=(25, 0))
-        replayButton.grid(row=23, column=1, pady=(3,0))
-        settingsButton.grid(row=23, column=2, pady=(3,0))
-        closeButton.grid(row=24, column=1, columnspan=2, pady=(5,0))
+        if (controller.showBetButtons == True):
+            betButton5 = tk.Button(self, text="$5",
+                              command=lambda: controller.betButton(controller, 5))
+            betButton10 = tk.Button(self, text="$10",
+                              command=lambda: controller.betButton(controller, 10))
+            betButton25 = tk.Button(self, text="$25",
+                              command=lambda: controller.betButton(controller, 25))
+            betButton50 = tk.Button(self, text="$50",
+                              command=lambda: controller.betButton(controller, 50))
+            dealButton = tk.Button(self, text="Deal Cards",
+                              command=lambda: controller.dealButton(controller))
+
+            betButton5.grid(row=21, column=3, pady=(5, 0))
+            betButton10.grid(row=21, column=4, pady=(5, 0))
+            betButton25.grid(row=21, column=5, pady=(5,0))
+            betButton50.grid(row=21, column=6, pady=(5,0))
+            dealButton.grid(row=22, column=3, columnspan=4, pady=(5,0))
+
+        userBetLabel = tk.Label(self, text="Bet: $" + str(controller.user.bet))
+        userBetLabel.grid(row=20,  column=3, columnspan=4)
+
+        # ===== Buttons Display ===== #
+        if (controller.showGamePlayButtons == True):
+            hitMe = tk.Button(self, text="Hit Me",
+                              command=lambda: controller.hitMeButton(controller))
+            done = tk.Button(self, text="Stay",
+                              command=lambda: controller.doneButton(controller))
+            replayButton = tk.Button(self, text="Replay?",
+                                command=lambda: controller.replayGame(controller))
+            settingsButton = tk.Button(self, text="Settings",
+                                command=lambda: controller.settingsGame(controller))
+            closeButton = tk.Button(self, text="Quit",
+                                command=lambda: controller.closeApp())
+
+            hitMe.grid(row=22, column=1, pady=(25, 0))
+            done.grid(row=22, column=2, pady=(25, 0))
+            replayButton.grid(row=23, column=1, pady=(3,0))
+            settingsButton.grid(row=23, column=2, pady=(3,0))
+            closeButton.grid(row=24, column=1, columnspan=2, pady=(5,0))
 
 
 if __name__ == "__main__":
