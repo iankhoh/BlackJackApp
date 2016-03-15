@@ -31,3 +31,4 @@ class player:
         for i in self.onHand:
             totalOnHand += int(cards.numbersRep["%s" % i[0]])
             self.totalOnHand = totalOnHand
+        cards.numbersRep['A'] = 11

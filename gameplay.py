@@ -6,6 +6,7 @@ class gameplay:
         self.totalPlayers = []
         self.playerDict = {}
         self.winner = ""
+        self.totalPlayersBet = 0
 
     def addPlayer(self, name, dealer="NULL", userRight=False):
         playerObj = player(name, dealer, userRight)
@@ -28,7 +29,6 @@ class gameplay:
             for j in self.totalPlayers:
                 j.drawCard(deck)
 
-
         for k in self.totalPlayers:
             if (self.playerDict[k.name].userRight != False):
                 temp = str(k.totalOnHand)
@@ -47,7 +47,6 @@ class gameplay:
         dealerOnHand = dealer.totalOnHand
         print ("Dealer: %s" % dealerOnHand)
 
-
         # If dealer has more than 21,
         # results = Tie, if player > 21
         # results = Win, if player < 21
@@ -64,6 +63,7 @@ class gameplay:
                         i.winner = True
                         print ("%s: %s - WON!" % (i.name, i.totalOnHand))
                         i.money += i.bet
+                        self.totalPlayersBet -= i.bet
 
         # If dealer does not exceed 21, validate if players
         # Win, Lose, or Tie
@@ -74,10 +74,12 @@ class gameplay:
                         i.winner = False
                         print ("%s: %s - LOST! (card burst)" % (i.name, i.totalOnHand))
                         i.money -= i.bet
+                        self.totalPlayersBet += i.bet
                     elif i.totalOnHand > dealerOnHand:
                         i.winner = True
                         print ("%s: %s - WON!" % (i.name, i.totalOnHand))
                         i.money += i.bet
+                        self.totalPlayersBet -= i.bet
                     elif i.totalOnHand == dealerOnHand:
                         i.winner = "Tie"
                         print ("%s: %s - TIED!" % (i.name, i.totalOnHand))
@@ -85,6 +87,14 @@ class gameplay:
                         i.winner = False
                         print ("%s: %s - LOST!" % (i.name, i.totalOnHand))
                         i.money -= i.bet
+                        self.totalPlayersBet += i.bet
 
+        # totalPlayersBet is the results of the money earn/loss
+        # the math has been done during the above checking
+        dealer.money += self.totalPlayersBet
+        if self.totalPlayersBet > 0:
+            dealer.winner = True
+        else:
+            dealer.winner = False
 
         print ("________________________\n")
